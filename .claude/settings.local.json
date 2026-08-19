@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git stash *)",
+      "Bash(npm run *)",
+      "Bash(rm \"c:/Raxwo/LearningMS/src/app/\\(dashboard\\)/exams/new/page.tsx\" \"c:/Raxwo/LearningMS/src/app/\\(dashboard\\)/exams/[id]/edit/page.tsx\" *)",
+      "Bash(node \"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Raxwo-LearningMS\\\\9eafde24-b095-43ea-8bca-19900b74e109\\\\scratchpad\\\\make-session.mjs\" admin@nps.edu)"
+    ],
+    "additionalDirectories": [
+      "c:\\Raxwo\\LearningMS\\src\\app\\(dashboard)\\exams\\[id]\\edit"
+    ]
+  }
+}

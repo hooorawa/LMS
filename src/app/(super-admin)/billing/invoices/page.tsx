@@ -1,0 +1,16 @@
+import { listInvoices } from "@/lib/data/subscription.data";
+import { listInstitutes } from "@/lib/data/institute.data";
+import { DataTableCard, type DataTableRow } from "@/components/data-table/data-table-card";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { InvoiceFormDialog } from "./new/invoice-form-dialog";
+import { InvoiceManagementDialog } from "./invoice-management-dialog";
+
+const columns = [{ key: "invoice", header: "Invoice" }, { key: "institute", header: "Institute", sortable: true }, { key: "amount", header: "Amount", sortable: true }, { key: "due", header: "Due", sortable: true }, { key: "status", header: "Status", sortable: true }];
+export default async function InvoicesPage() {
+  const [invoices, institutesList] = await Promise.all([listInvoices(), listInstitutes()]);
+  const institutes = institutesList.map((institute) => ({ id: String(institute._id), name: institute.name, code: institute.code }));
+  const rows: DataTableRow[] = invoices.map((invoice) => { const institute = invoice.instituteId as unknown as { name?: string } | null; const plan = invoice.planId as unknown as { name?: string } | null; const status = invoice.status === "pending" && invoice.dueAt < new Date() ? "overdue" : invoice.status; const data = { id: String(invoice._id), invoiceNumber: invoice.invoiceNumber, instituteName: institute?.name ?? "Unknown institute", planName: invoice.planNameSnapshot || plan?.name, amount: invoice.amount, currency: invoice.currency, status: invoice.status, dueAt: invoice.dueAt.toISOString(), issuedAt: invoice.issuedAt.toISOString(), paidAt: invoice.paidAt?.toISOString(), paymentMethod: invoice.paymentMethod ?? undefined, notes: invoice.notes ?? undefined }; return { key: String(invoice._id), searchValue: `${invoice.invoiceNumber} ${institute?.name ?? ""} ${status}`, sortValues: [null, institute?.name ?? "", invoice.amount, invoice.dueAt.getTime(), status], cells: [<InvoiceManagementDialog key="invoice" invoice={data} trigger={invoice.invoiceNumber} />, institute?.name ?? "Unknown institute", `${invoice.currency} ${invoice.amount.toFixed(2)}`, new Date(invoice.dueAt).toLocaleDateString(), <Badge key="status" variant={status === "paid" ? "success" : status === "overdue" ? "destructive" : "secondary"} className="capitalize">{status}</Badge>] }; });
+  return <div><div className="flex items-center justify-between"><div><h1 className="text-2xl font-semibold">Invoices</h1><p className="mt-1 text-sm text-muted-foreground">Manual subscription billing records.</p></div><div className="flex items-center gap-4"><a href="/api/platform-reports/invoices?format=csv" target="_blank" rel="noreferrer" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>Export CSV</a><a href="/api/platform-reports/invoices?format=pdf" target="_blank" rel="noreferrer" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>Export PDF</a><InvoiceFormDialog institutes={institutes} /></div></div><div className="mt-6"><DataTableCard columns={columns} rows={rows} searchPlaceholder="Search invoices..." emptyTitle="No invoices yet." /></div></div>;
+}
